@@ -194,4 +194,270 @@ void interrupcion_callback() {
   }
 }
 ```
+La parte de Admin tiene diversas funciones las cuales se eligen de manera identica que el seleccionar producto de Servicio.
+```c
+void admin() {
+  analogWrite(PIN_LED_PREPARAR_CAFE, 255);
+  analogWrite(PIN_LED, 255);
+  lcd.clear();
+  if( return_accion == -1) {
+    lcd.clear();
+    return_accion = elegir_accion_admin();
+  }
+  if(return_accion == 0){
+    ver_th();
+  }
+  if(return_accion == 1){
+    ver_distacia();
+  }
+  if(return_accion == 2){
+    ver_contador();
+  }
+  if(return_accion == 3){
+    cambio_precios();
+  }
+}
+```
+```c
+int elegir_accion_admin() {
+  int lectura = analogRead(VRY);
+  
+  if(lectura<350){
+    accion_menu_elegido = (accion_menu_elegido + 1);
+    lcd.clear();
+    lcd.setCursor(0,0);
+  }
+  else if(lectura>700){
+    accion_menu_elegido = (accion_menu_elegido - 1);
+    lcd.clear();
+    lcd.setCursor(0,0);
+  }
+  lcd.setCursor(0,0);
+  lcd.print(menu_admin_1[abs(accion_menu_elegido)%4]);
+  lcd.setCursor(0,1);
+  lcd.print(menu_admin_2[abs(accion_menu_elegido)%4]);  
+  delay(100);
+  
+  lectura = digitalRead(R3);
+  //accion seleccionada
+  if(lectura == LOW){  
+    return abs(accion_menu_elegido)%4;
+  }
 
+  //salir de admin
+  if (admin_mode == false) {
+    return -1;
+  }
+
+  delay(100); 
+  return -1;
+}
+```
+Las difetentes psobilidades son Ver temperatura y humedad, Ver sensor distancia, Ver contador y modificar precios.
+Las tres primeras son bastante parecidas, sales de ellas dandole a la izquierda en el joystick o saliendo sirectamente de amdin. Se cambia todo de manera dinámica.
+```c
+void ver_th() {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  int lectura;
+  
+  // Leemos la humedad relativa
+  float h = dht.readHumidity();
+  // Leemos la temperatura en grados centígrados (por defecto)
+  float t = dht.readTemperature();
+  if (isnan(h) || isnan(t)){
+    Serial.println("Error obteniendo los datos del sensor DHT11");
+    return;
+  }
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Hum: ");
+  lcd.setCursor(5,0);
+  lcd.print(h);
+
+  lcd.setCursor(0,1);
+  lcd.print("Temp:");
+  lcd.setCursor(6,1);
+  lcd.print(t);
+
+  if (admin_mode == false) {
+    return_accion = -1;
+    return -1;
+  }
+
+  lectura = analogRead(VRX);
+  if (lectura<350) {
+    return_accion = -1;
+    return -1;
+  }
+
+  delay(200);
+}
+
+void ver_distacia() {
+  int lectura;
+  long t; //timepo que demora en llegar el eco
+  long d; //distancia en centimetros
+  digitalWrite(TRIGGER, HIGH);
+  delayMicroseconds(10);          //Enviamos un pulso de 10us
+  digitalWrite(TRIGGER, LOW);
+  
+  t = pulseIn(ECHO, HIGH); //obtenemos el ancho del pulso
+  d = t/59;
+
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Distancia: ");
+  lcd.setCursor(10,0);
+  lcd.print(d);
+  lcd.setCursor(14,0);
+  lcd.print("cm");
+
+  if (admin_mode == false) {
+    return_accion = -1;
+    return -1;
+  }
+  
+  lectura = analogRead(VRX);
+  if (lectura<350) {
+    return_accion = -1;
+    return -1;
+  }
+
+  delay(200);
+}
+
+void ver_contador() {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  int lectura;
+  long contador = millis();
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Contador: ");
+  lcd.setCursor(10,0);
+  lcd.print(contador/1000);
+  
+  lectura = analogRead(VRX);
+
+  if (admin_mode == false) {
+    return_accion = -1;
+    return -1;
+  }
+
+  lectura = analogRead(VRX);
+  if (lectura<350) {
+    return_accion = -1;
+    return -1;
+  }
+  delay(100);
+}
+```
+La función de cambio de precios es mas compleja que las demás. Primero se listan los productos los cualses puedes recorrer con el joystick de arriba a abajo. Si le das a la izquierda se sale al menu de admin. Al elegir el producto que quieres cambiar, pulsando el joystick, se cambia el LCD y indica que lo estas cambiando. Para cambiarlo subes arriba o abajo (aumentando o disminuyendo 5 cent). Para guardar pulsas el joystick, pero si no quieres guardar el precio, con darle a la izquierda vale.
+En todo momento si se pulsa el boton para salirse de admin, se saldrá.
+```c
+void cambio_precios() {
+  int lectura;
+
+  //si aun no se ha elegido el producto a cambiar
+  if( producto_cambio_elegido == false ) {
+    lectura = analogRead(VRY);
+    if(lectura<350){
+      producto_elegido = (producto_elegido + 1);
+      lcd.clear();
+      lcd.setCursor(0,0);
+    }
+    else if(lectura>700){
+      producto_elegido = (producto_elegido - 1);
+      lcd.clear();
+      lcd.setCursor(0,0);
+    }
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(productos[abs(producto_elegido)%5]);
+    lcd.setCursor(0,1);
+    lcd.print(precios[abs(producto_elegido)%5]);  
+    delay(100);
+
+    lectura = analogRead(VRX);
+    if (lectura<350) {
+      //volver al menu de admin
+      return_accion = -1;
+      return 1;
+    }
+
+    if (admin_mode == false) {
+      //salir de admin
+      return_accion = -1;
+      return -1;
+    }
+    lectura = digitalRead(R3);
+    Serial.println(lectura);
+    if(lectura == LOW){
+      //elegido el producto
+      producto_cambio_elegido = true;
+      precio_nuevo = precios[abs(producto_elegido)%5];
+    }
+  } else {
+    //cambio de precios
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(productos[abs(producto_elegido)%5]);
+    lcd.setCursor(0,1);
+    lcd.print("cambiando: ");
+    lcd.setCursor(11,1);
+    lcd.print(precio_nuevo); 
+    lectura = analogRead(VRY);
+    if(lectura<350){
+      precio_nuevo = (precio_nuevo - 0.05);
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(productos[abs(producto_elegido)%5]);
+      lcd.setCursor(0,1);
+      lcd.print("cambiando: ");
+      lcd.setCursor(11,1);
+      lcd.print(precio_nuevo);  
+    }
+    else if(lectura>700){
+      precio_nuevo = (precio_nuevo + 0.05);
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print(productos[abs(producto_elegido)%5]);
+      lcd.setCursor(0,1);
+      lcd.print("cambiando: ");
+      lcd.setCursor(11,1);
+      lcd.print(precio_nuevo);  
+    }
+    delay(100);
+    lectura = analogRead(VRX);
+    if (lectura<350) {
+      //cambiar de producto
+      producto_cambio_elegido = false;
+      return 0;
+    }
+
+    if (admin_mode == false) {
+      //salir de admin
+      producto_cambio_elegido = false;
+      return_accion = -1;
+      return 0;
+    }
+
+    lectura = digitalRead(R3);
+    if(lectura == LOW) {
+      //guardar cambio
+      precios[abs(producto_elegido)%5] = precio_nuevo;
+      producto_cambio_elegido = false;
+      return 0;
+    }
+  }
+  delay(100); 
+}
+```
+
+Todo esto con un watchdog el cual esta configurado con 8s y se encuentra un reset al final del loop.
+```c
+  wdt_disable();
+  wdt_enable(WDTO_8S);
+```
