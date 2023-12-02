@@ -464,9 +464,11 @@ Todo esto con un watchdog el cual esta configurado con 8s y se encuentra un rese
 Así sería más o menos el circuito. El DHT11 no existe tal cual por tanto he usado este que hes parecido.
 ![Untitled Sketch 2_bb](https://github.com/jlozanot2021/SETR_p3/assets/102520615/2a2cc809-a3a7-46ee-85c6-34c375a18c29)
 
-Video:
+##### Video:
+
 El video va a una velocidad un poco mayor que la real. Lo he hecho para que se pueda ver la funcionalidad en el menor tiempo posible.
 Durante el corte no hay ningún cambio ni repetición del programa.
+
 https://youtu.be/7YrnNskqoDg
 
 
