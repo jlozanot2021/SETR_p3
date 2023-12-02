@@ -62,7 +62,7 @@ bool lector_distancia() {
   }
   return distancia_1m;
 ```
-Ahora en el caso de que ha leido la distancia muestra la humedad y temperatura.
+Ahora en el caso de que ha leido la distancia muestra la humedad y temperatura. Se muestra hasta que pasen 5 minutos o hasta que se pulse el boton para el reinicio.
 ```c
 void lector_temperatura_humedad(){
 
@@ -86,7 +86,7 @@ void lector_temperatura_humedad(){
   lcd.setCursor(6,1);
   lcd.print(t);
 
-  for (int i = 0; i < 10; i += 1) {
+  for (int i = 0; i < (TIEMPO_T_H/500); i += 1) {
     // si se activa el reinicio
     if (reinicio == true) {
       return -1;
@@ -95,3 +95,4 @@ void lector_temperatura_humedad(){
   }
 }
 ```
+Después de mostrarse la temperatura y humedad se pasa a enseñar los productos y sus precios. Aquí puedes subir hacia arriba o abajo y elegir el producto pulsando el joystick
