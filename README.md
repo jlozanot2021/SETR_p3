@@ -456,7 +456,7 @@ void cambio_precios() {
 }
 ```
 
-Todo esto con un watchdog el cual esta configurado con 8s y se encuentra un reset al final del loop.
+Todo esto con un watchdog el cual esta configurado con 8s y se encuentra un reset al final del loop. También hay un reset antes de preparar la bebida y después ya que esta función puede tardar 8 s lo que haría que se reiniciase.  
 ```c
   wdt_disable();
   wdt_enable(WDTO_8S);
