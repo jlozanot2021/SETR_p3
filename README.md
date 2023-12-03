@@ -168,6 +168,7 @@ Por último, en servicio, se resetean todas las variables globales para que se p
       }
 ```
 Para activar el reinicio o entrar a admin, he empleado una interrupción la cual se activa a la que cambie el dato que recibe del boton. La he usado con CHANGE para que realice las dos funciones en una sola función.
+Esta interrupción lee al pulsarlo y guarda el tiempo y luego, al soltarlo, según el tiempo que lleve pulsado, realizará una función u otra. 
 ```c
   pinMode(BOTTON, INPUT);
   attachInterrupt(digitalPinToInterrupt(BOTTON),interrupcion_callback,CHANGE);
@@ -253,7 +254,7 @@ int elegir_accion_admin() {
   return -1;
 }
 ```
-Las difetentes psobilidades son Ver temperatura y humedad, Ver sensor distancia, Ver contador y modificar precios.
+Las difetentes pbilidades son Ver temperatura y humedad, Ver sensor distancia, Ver contador y modificar precios.
 Las tres primeras son bastante parecidas, sales de ellas dandole a la izquierda en el joystick o saliendo sirectamente de amdin. Se cambia todo de manera dinámica.
 ```c
 void ver_th() {
